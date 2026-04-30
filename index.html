@@ -22,7 +22,15 @@
     }
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    html, body {
+    html {
+      min-height: 100%;
+      overflow-x: hidden;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      touch-action: pan-y;
+      overscroll-behavior-y: auto;
+    }
+    body {
       margin: 0;
       min-height: 100%;
       color: var(--text);
@@ -31,15 +39,12 @@
         radial-gradient(circle at 12% 8%, rgba(255, 255, 255, 0.86), transparent 32%),
         radial-gradient(circle at 86% 18%, rgba(245, 214, 175, 0.7), transparent 24%),
         linear-gradient(180deg, var(--bg1), var(--bg2));
-      overflow: hidden;
-    }
-    body {
-      min-height: 100svh;
-      display: flex;
-      justify-content: center;
+      overflow-x: hidden;
+      overflow-y: auto;
+      display: block;
       padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
     }
-    .app { width: min(100%, 1180px); min-height: 100%; display: grid; gap: 14px; grid-template-rows: auto 1fr; }
+    .app { width: min(100%, 1180px); margin: 0 auto; min-height: auto; display: grid; gap: 14px; grid-template-rows: auto 1fr; }
     .hero, .menu, .view, .topbar, .footer, .hud, .stage { border: 1px solid var(--line); background: var(--panel); box-shadow: var(--shadow-soft); backdrop-filter: blur(12px); }
     .hero { border-radius: calc(var(--radius) + 6px); padding: clamp(18px, 3vw, 34px); background: linear-gradient(180deg, rgba(255, 251, 244, 0.98), rgba(248, 239, 223, 0.9)); }
     .hero h1 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: clamp(2.5rem, 7vw, 5rem); line-height: 0.95; letter-spacing: 0.02em; }
@@ -153,31 +158,6 @@
     <section class="menu" id="menuView" aria-label="程序選擇">
       <article class="menu-card">
         <div>
-          <h2>工程計算機</h2>
-          <p>支援基本四則、次方、三角函數、對數與常數，適合做課堂公式驗算與工程數值試算。</p>
-        </div>
-        <div class="tags">
-          <span class="tag">科學函數</span>
-          <span class="tag">即時計算</span>
-          <span class="tag">工程用途</span>
-        </div>
-        <div class="preview calc-preview" data-title="Engineering Calc">
-          <div class="calc-scene">
-            <div class="calc-mini" aria-hidden="true">
-              <div class="calc-mini-screen">sin(45)+2^3</div>
-              <div class="calc-mini-keys">
-                <span></span><span></span><span></span><span></span>
-                <span></span><span></span><span></span><span></span>
-                <span></span><span></span><span></span><span></span>
-              </div>
-            </div>
-          </div>
-        </div>
-        <button class="action" type="button" data-open="calc">開始工程計算機</button>
-      </article>
-
-      <article class="menu-card">
-        <div>
           <h2>打地鼠</h2>
           <p>以短時間反應與點擊準度為核心，讓玩家在不斷出現的目標中追求更高分數，適合快速上手與反覆挑戰。</p>
         </div>
@@ -212,6 +192,31 @@
           </div>
         </div>
         <button class="action" type="button" data-open="snake">開始貪吃蛇</button>
+      </article>
+
+      <article class="menu-card">
+        <div>
+          <h2>工程計算機</h2>
+          <p>支援基本四則、次方、三角函數、對數與常數，適合做課堂公式驗算與工程數值試算。</p>
+        </div>
+        <div class="tags">
+          <span class="tag">科學函數</span>
+          <span class="tag">即時計算</span>
+          <span class="tag">工程用途</span>
+        </div>
+        <div class="preview calc-preview" data-title="Engineering Calc">
+          <div class="calc-scene">
+            <div class="calc-mini" aria-hidden="true">
+              <div class="calc-mini-screen">sin(45)+2^3</div>
+              <div class="calc-mini-keys">
+                <span></span><span></span><span></span><span></span>
+                <span></span><span></span><span></span><span></span>
+                <span></span><span></span><span></span><span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button class="action" type="button" data-open="calc">開始工程計算機</button>
       </article>
     </section>
 
