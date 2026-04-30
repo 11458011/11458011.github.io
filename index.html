@@ -95,12 +95,19 @@
     .hole.hit { animation: pop 180ms ease-out; }
     .hole.hit .mole { transform: translate(-50%, 6%) scale(0.96); }
     @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
-    .snake-wrap { width: min(100%, 640px); aspect-ratio: 1 / 1; display: grid; gap: 12px; grid-template-rows: 1fr auto; }
+    .snake-wrap { width: min(100%, 640px); aspect-ratio: 1 / 1; display: grid; gap: 12px; grid-template-rows: 1fr auto auto; }
     .snake-board { border-radius: 24px; background: linear-gradient(180deg, #164c3f, #102c25); border: 1px solid rgba(255, 255, 255, 0.12); padding: 10px; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04); display: grid; grid-template-columns: repeat(20, 1fr); grid-template-rows: repeat(20, 1fr); gap: 2px; min-height: 0; }
     .cell { border-radius: 5px; background: rgba(255, 255, 255, 0.03); }
     .snake-head { background: #d7ff84; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.08); }
     .snake-body { background: #77d977; }
     .snake-food { background: #ff6d7f; border-radius: 50%; }
+    .snake-pad { display: grid; grid-template-columns: repeat(3, 64px); grid-template-rows: repeat(2, 56px); gap: 8px; justify-content: center; align-content: center; }
+    .snake-pad button { border: 0; border-radius: 12px; font: inherit; font-weight: 900; background: rgba(255, 255, 255, 0.84); color: #1e2a22; box-shadow: 0 6px 14px rgba(0,0,0,0.12); }
+    .snake-pad button:active { transform: translateY(1px) scale(0.98); }
+    .snake-pad .up { grid-column: 2; grid-row: 1; }
+    .snake-pad .left { grid-column: 1; grid-row: 2; }
+    .snake-pad .down { grid-column: 2; grid-row: 2; }
+    .snake-pad .right { grid-column: 3; grid-row: 2; }
     .controls { display: flex; gap: 10px; flex-wrap: wrap; }
     button.action { border: 0; border-radius: 14px; padding: 12px 16px; font: inherit; font-weight: 900; color: #1c1408; background: linear-gradient(135deg, #ffd66f, #f2b85e); box-shadow: 0 12px 22px rgba(233, 169, 69, 0.24); cursor: pointer; min-width: 112px; }
     button.action.secondary { color: var(--text); background: rgba(255, 255, 255, 0.72); border: 1px solid rgba(101, 82, 57, 0.12); box-shadow: none; }
@@ -212,12 +219,19 @@
         <div class="snake-wrap">
           <div class="snake-board" id="snakeBoard" aria-label="貪吃蛇遊戲盤"></div>
           <div class="back-note">提示：可用方向鍵，或在遊戲盤上滑動。按下「開始遊戲」即可重新開始。</div>
+          <div class="snake-pad" aria-label="方向控制">
+            <button type="button" class="up" data-snake-dir="up">上</button>
+            <button type="button" class="left" data-snake-dir="left">左</button>
+            <button type="button" class="down" data-snake-dir="down">下</button>
+            <button type="button" class="right" data-snake-dir="right">右</button>
+          </div>
         </div>
       </section>
 
       <footer class="footer">
         <div class="controls">
           <button class="action" id="snakeStartBtn" type="button">開始遊戲</button>
+          <button class="action secondary" id="snakePauseBtn" type="button">暫停</button>
           <button class="action secondary" id="snakeBackBtn" type="button">回到選單</button>
         </div>
         <div class="credit">設計者：施沛辰</div>
@@ -245,10 +259,12 @@
 
       const snakeBoard = document.getElementById('snakeBoard');
       const snakeStartBtn = document.getElementById('snakeStartBtn');
+      const snakePauseBtn = document.getElementById('snakePauseBtn');
       const snakeStatus = document.getElementById('snakeStatus');
       const snakeScoreEl = document.getElementById('snakeScore');
       const snakeBestEl = document.getElementById('snakeBest');
       const snakeSpeedEl = document.getElementById('snakeSpeed');
+      const snakeDirButtons = document.querySelectorAll('[data-snake-dir]');
 
       const HOLE_COUNT = 9;
       const GAME_TIME = 30;
@@ -280,6 +296,7 @@
       let snakeScore = 0;
       let snakeBest = Number(localStorage.getItem('snake-best') || 0);
       let snakeSpeedLabel = '正常';
+      let snakeTickMs = 170;
       let touchStart = null;
 
       bestEl.textContent = best;
@@ -350,7 +367,6 @@
         menuView.classList.toggle('active', view === 'menu');
         whackView.classList.toggle('active', view === 'whack');
         snakeView.classList.toggle('active', view === 'snake');
-        console.debug('setView ->', view);
         if (view === 'whack') {
           updateWhackHud();
           setAudioState();
@@ -370,9 +386,8 @@
           button.className = 'hole';
           button.setAttribute('aria-label', `第 ${index + 1} 個洞`);
           button.innerHTML = createMoleMarkup();
-          // 支援多種輸入事件，並加入除錯資訊
-          button.addEventListener('pointerdown', (e) => { console.debug('hole pointerdown', index); hitHole(button); });
-          button.addEventListener('click', (e) => { console.debug('hole click', index); hitHole(button); });
+          button.addEventListener('pointerdown', () => hitHole(button));
+          button.addEventListener('click', () => hitHole(button));
           board.appendChild(button);
           return button;
         });
@@ -499,6 +514,19 @@
         snakeFood = nextFood;
       }
 
+      function updateSnakeSpeedByScore() {
+        const level = Math.min(6, Math.floor(snakeScore / 30));
+        snakeTickMs = 170 - (level * 12);
+        if (snakeTickMs > 150) snakeSpeedLabel = '正常';
+        else if (snakeTickMs > 120) snakeSpeedLabel = '偏快';
+        else snakeSpeedLabel = '高速';
+      }
+
+      function restartSnakeTimer() {
+        clearInterval(snakeInterval);
+        snakeInterval = setInterval(stepSnake, snakeTickMs);
+      }
+
       function resetSnakeGame() {
         clearInterval(snakeInterval);
         snakeRunning = true;
@@ -510,11 +538,11 @@
           { x: 6, y: 10 },
           { x: 5, y: 10 },
         ];
-        snakeSpeedLabel = '正常';
+        updateSnakeSpeedByScore();
         placeSnakeFood();
         updateSnakeHud();
         drawSnake();
-        snakeInterval = setInterval(stepSnake, 170);
+        restartSnakeTimer();
       }
 
       function drawSnake() {
@@ -535,8 +563,11 @@
         }
         const head = snake[0];
         const nextHead = { x: head.x + snakeDirection.x, y: head.y + snakeDirection.y };
+        const willEat = nextHead.x === snakeFood.x && nextHead.y === snakeFood.y;
         const hitWall = nextHead.x < 0 || nextHead.x >= GRID_SIZE || nextHead.y < 0 || nextHead.y >= GRID_SIZE;
-        const hitSelf = snake.some((segment) => segment.x === nextHead.x && segment.y === nextHead.y);
+        // 若這一步不會吃到食物，尾巴會先移除，所以檢查自撞時要排除尾端
+        const bodyToCheck = willEat ? snake : snake.slice(0, -1);
+        const hitSelf = bodyToCheck.some((segment) => segment.x === nextHead.x && segment.y === nextHead.y);
         if (hitWall || hitSelf) {
           snakeRunning = false;
           clearInterval(snakeInterval);
@@ -550,11 +581,12 @@
           return;
         }
         snake.unshift(nextHead);
-        if (nextHead.x === snakeFood.x && nextHead.y === snakeFood.y) {
+        if (willEat) {
           snakeScore += 10;
-          if (snakeScore >= 60) snakeSpeedLabel = '加速';
+          updateSnakeSpeedByScore();
           updateSnakeHud();
           placeSnakeFood();
+          restartSnakeTimer();
         } else {
           snake.pop();
         }
@@ -562,11 +594,27 @@
       }
 
       function startSnakeGame() {
-        console.debug('startSnakeGame called');
         resetSnakeGame();
       }
 
+      function toggleSnakePause() {
+        if (!snake.length) return;
+        if (snakeRunning) {
+          snakeRunning = false;
+          clearInterval(snakeInterval);
+          snakeInterval = null;
+          snakeStatus.textContent = '狀態：暫停';
+          snakePauseBtn.textContent = '繼續';
+        } else {
+          snakeRunning = true;
+          restartSnakeTimer();
+          snakeStatus.textContent = '狀態：進行中';
+          snakePauseBtn.textContent = '暫停';
+        }
+      }
+
       function setSnakeDirection(x, y) {
+        if (!snakeRunning) return;
         const candidate = { x, y };
         if (snakeDirection.x + candidate.x === 0 && snakeDirection.y + candidate.y === 0) return;
         nextDirection = candidate;
@@ -596,18 +644,15 @@
       });
       snakeBoard.addEventListener('pointercancel', () => { touchStart = null; });
 
-      openButtons.forEach((button, idx) => {
+      openButtons.forEach((button) => {
         button.addEventListener('click', () => {
           const target = button.dataset.open;
-          console.debug('open button clicked', idx, target);
           if (target === 'whack') {
             setView('whack');
-            console.debug('starting whack game');
             startWhackGame();
           }
           if (target === 'snake') {
             setView('snake');
-            console.debug('starting snake game');
             startSnakeGame();
           }
         });
@@ -623,11 +668,34 @@
       });
 
       snakeStartBtn.addEventListener('click', startSnakeGame);
+      snakePauseBtn.addEventListener('click', toggleSnakePause);
       snakeBackBtn.addEventListener('click', () => {
         snakeRunning = false;
         clearInterval(snakeInterval);
         snakeInterval = null;
+        snakePauseBtn.textContent = '暫停';
         setView('menu');
+      });
+
+      snakeDirButtons.forEach((btn) => {
+        const map = {
+          up: [0, -1],
+          down: [0, 1],
+          left: [-1, 0],
+          right: [1, 0],
+        };
+        btn.addEventListener('pointerdown', (event) => {
+          event.preventDefault();
+          const dir = btn.dataset.snakeDir;
+          const vector = map[dir];
+          if (vector) setSnakeDirection(vector[0], vector[1]);
+        });
+        btn.addEventListener('click', (event) => {
+          event.preventDefault();
+          const dir = btn.dataset.snakeDir;
+          const vector = map[dir];
+          if (vector) setSnakeDirection(vector[0], vector[1]);
+        });
       });
 
       document.addEventListener('visibilitychange', () => {
@@ -655,6 +723,7 @@
       setAudioState();
       updateWhackHud();
       updateSnakeHud();
+      snakePauseBtn.textContent = '暫停';
       setView('menu');
     })();
   </script>
