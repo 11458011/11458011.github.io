@@ -55,7 +55,8 @@
     .preview::before { content: attr(data-title); position: absolute; top: 14px; left: 14px; z-index: 2; padding: 8px 12px; border-radius: 999px; background: rgba(255, 250, 241, 0.92); font-weight: 900; }
     .whack-preview { background: linear-gradient(180deg, #bfe3ff 0 42%, #90be6d 42% 100%); }
     .snake-preview { background: linear-gradient(180deg, #184a3d, #12382f); }
-    .whack-scene, .snake-scene { position: absolute; inset: 0; }
+    .calc-preview { background: linear-gradient(180deg, #1f2b44, #121826); }
+    .whack-scene, .snake-scene, .calc-scene { position: absolute; inset: 0; }
     .whack-scene::before, .whack-scene::after { content: ""; position: absolute; bottom: 10%; width: 28%; aspect-ratio: 1; border-radius: 50%; background: #7c4d39; box-shadow: inset 0 -12px 0 rgba(0, 0, 0, 0.15); }
     .whack-scene::before { left: 8%; }
     .whack-scene::after { right: 8%; }
@@ -68,6 +69,11 @@
     .snake-grid .snake-head { background: #b5ff6c; }
     .snake-grid .snake-body { background: #68d27f; }
     .snake-grid .snake-food { background: #ff6285; border-radius: 50%; }
+    .calc-scene { display: grid; place-items: center; padding: 16px; }
+    .calc-mini { width: min(100%, 360px); border-radius: 16px; padding: 10px; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.12); display: grid; gap: 8px; }
+    .calc-mini-screen { border-radius: 10px; min-height: 52px; display: grid; place-items: center end; padding: 8px 10px; color: #f4f6ff; font: 700 1rem/1.2 "Consolas", "Courier New", monospace; background: rgba(10, 14, 26, 0.8); }
+    .calc-mini-keys { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+    .calc-mini-keys span { height: 22px; border-radius: 7px; background: rgba(255, 255, 255, 0.15); }
     .view { border-radius: calc(var(--radius) + 6px); padding: 14px; display: none; min-height: 0; grid-template-rows: auto auto 1fr auto; gap: 12px; }
     .view.active { display: grid; }
     .topbar, .footer { border-radius: var(--ui-radius); padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
@@ -108,6 +114,16 @@
     .snake-pad .left { grid-column: 1; grid-row: 2; }
     .snake-pad .down { grid-column: 2; grid-row: 2; }
     .snake-pad .right { grid-column: 3; grid-row: 2; }
+    .calc-wrap { width: min(100%, 760px); display: grid; gap: 12px; }
+    .calc-screen { border-radius: 18px; border: 1px solid rgba(80, 96, 126, 0.3); background: linear-gradient(180deg, #1b263e, #131b2e); padding: 12px; }
+    .calc-expression { min-height: 24px; text-align: right; color: rgba(228, 236, 255, 0.75); font-size: 0.92rem; word-break: break-all; }
+    .calc-display { margin-top: 6px; width: 100%; border: 0; outline: 0; background: transparent; color: #f4f7ff; text-align: right; font: 800 clamp(1.6rem, 3vw, 2.2rem)/1.1 "Consolas", "Courier New", monospace; }
+    .calc-pad { display: grid; gap: 8px; grid-template-columns: repeat(5, minmax(0, 1fr)); }
+    .calc-btn { border: 0; border-radius: 12px; padding: 10px 8px; font: inherit; font-weight: 900; background: rgba(255, 255, 255, 0.8); color: #1f2433; box-shadow: 0 8px 14px rgba(0, 0, 0, 0.12); cursor: pointer; }
+    .calc-btn.op { background: #dfe8ff; }
+    .calc-btn.danger { background: #ffd6d6; color: #6f1f1f; }
+    .calc-btn.equal { background: #ffd66f; }
+    .calc-btn:active { transform: translateY(1px) scale(0.99); }
     .controls { display: flex; gap: 10px; flex-wrap: wrap; }
     button.action { border: 0; border-radius: 14px; padding: 12px 16px; font: inherit; font-weight: 900; color: #1c1408; background: linear-gradient(135deg, #ffd66f, #f2b85e); box-shadow: 0 12px 22px rgba(233, 169, 69, 0.24); cursor: pointer; min-width: 112px; }
     button.action.secondary { color: var(--text); background: rgba(255, 255, 255, 0.72); border: 1px solid rgba(101, 82, 57, 0.12); box-shadow: none; }
@@ -166,6 +182,31 @@
           </div>
         </div>
         <button class="action" type="button" data-open="snake">開始貪吃蛇</button>
+      </article>
+
+      <article class="menu-card">
+        <div>
+          <h2>工程計算機</h2>
+          <p>支援基本四則、次方、三角函數、對數與常數，適合做課堂公式驗算與工程數值試算。</p>
+        </div>
+        <div class="tags">
+          <span class="tag">科學函數</span>
+          <span class="tag">即時計算</span>
+          <span class="tag">工程用途</span>
+        </div>
+        <div class="preview calc-preview" data-title="Engineering Calc">
+          <div class="calc-scene">
+            <div class="calc-mini" aria-hidden="true">
+              <div class="calc-mini-screen">sin(45)+2^3</div>
+              <div class="calc-mini-keys">
+                <span></span><span></span><span></span><span></span>
+                <span></span><span></span><span></span><span></span>
+                <span></span><span></span><span></span><span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button class="action" type="button" data-open="calc">開始工程計算機</button>
       </article>
     </section>
 
@@ -237,6 +278,75 @@
         <div class="credit">設計者：施沛辰</div>
       </footer>
     </section>
+
+    <section class="view" id="calcView" aria-label="工程計算機程序">
+      <header class="topbar">
+        <div>
+          <h2>工程計算機</h2>
+          <p>支援 sin / cos / tan、sqrt、log、ln、次方與括號。</p>
+        </div>
+        <div class="chip" id="calcMode">模式：DEG</div>
+      </header>
+
+      <section class="hud" aria-label="計算機資訊">
+        <div class="stat"><label>狀態</label><strong id="calcStatus">待機</strong></div>
+        <div class="stat"><label>記憶</label><strong id="calcMemory">0</strong></div>
+        <div class="stat"><label>上次結果</label><strong id="calcLast">0</strong></div>
+      </section>
+
+      <section class="stage">
+        <div class="calc-wrap">
+          <div class="calc-screen">
+            <div class="calc-expression" id="calcExpression"></div>
+            <input class="calc-display" id="calcDisplay" value="0" readonly aria-label="計算機顯示" />
+          </div>
+          <div class="calc-pad" id="calcPad" aria-label="工程計算機按鍵">
+            <button class="calc-btn danger" type="button" data-calc-action="clear">AC</button>
+            <button class="calc-btn danger" type="button" data-calc-action="backspace">DEL</button>
+            <button class="calc-btn" type="button" data-calc-value="(">(</button>
+            <button class="calc-btn" type="button" data-calc-value=")">)</button>
+            <button class="calc-btn op" type="button" data-calc-action="toggleMode">DEG/RAD</button>
+
+            <button class="calc-btn" type="button" data-calc-value="7">7</button>
+            <button class="calc-btn" type="button" data-calc-value="8">8</button>
+            <button class="calc-btn" type="button" data-calc-value="9">9</button>
+            <button class="calc-btn op" type="button" data-calc-value="/">÷</button>
+            <button class="calc-btn op" type="button" data-calc-value="sqrt(">√</button>
+
+            <button class="calc-btn" type="button" data-calc-value="4">4</button>
+            <button class="calc-btn" type="button" data-calc-value="5">5</button>
+            <button class="calc-btn" type="button" data-calc-value="6">6</button>
+            <button class="calc-btn op" type="button" data-calc-value="*">×</button>
+            <button class="calc-btn op" type="button" data-calc-value="^">x^y</button>
+
+            <button class="calc-btn" type="button" data-calc-value="1">1</button>
+            <button class="calc-btn" type="button" data-calc-value="2">2</button>
+            <button class="calc-btn" type="button" data-calc-value="3">3</button>
+            <button class="calc-btn op" type="button" data-calc-value="-">-</button>
+            <button class="calc-btn op" type="button" data-calc-value="log(">log</button>
+
+            <button class="calc-btn" type="button" data-calc-value="0">0</button>
+            <button class="calc-btn" type="button" data-calc-value=".">.</button>
+            <button class="calc-btn op" type="button" data-calc-value="pi">π</button>
+            <button class="calc-btn op" type="button" data-calc-value="+">+</button>
+            <button class="calc-btn equal" type="button" data-calc-action="evaluate">=</button>
+
+            <button class="calc-btn op" type="button" data-calc-value="sin(">sin</button>
+            <button class="calc-btn op" type="button" data-calc-value="cos(">cos</button>
+            <button class="calc-btn op" type="button" data-calc-value="tan(">tan</button>
+            <button class="calc-btn op" type="button" data-calc-value="ln(">ln</button>
+            <button class="calc-btn op" type="button" data-calc-value="ans">Ans</button>
+          </div>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <div class="controls">
+          <button class="action secondary" id="calcBackBtn" type="button">回到選單</button>
+        </div>
+        <div class="credit">設計者：施沛辰</div>
+      </footer>
+    </section>
   </main>
 
   <script>
@@ -244,10 +354,12 @@
       const menuView = document.getElementById('menuView');
       const whackView = document.getElementById('whackView');
       const snakeView = document.getElementById('snakeView');
+      const calcView = document.getElementById('calcView');
 
       const openButtons = document.querySelectorAll('[data-open]');
       const whackBackBtn = document.getElementById('whackBackBtn');
       const snakeBackBtn = document.getElementById('snakeBackBtn');
+      const calcBackBtn = document.getElementById('calcBackBtn');
 
       const board = document.getElementById('board');
       const scoreEl = document.getElementById('score');
@@ -265,6 +377,14 @@
       const snakeBestEl = document.getElementById('snakeBest');
       const snakeSpeedEl = document.getElementById('snakeSpeed');
       const snakeDirButtons = document.querySelectorAll('[data-snake-dir]');
+
+      const calcModeChip = document.getElementById('calcMode');
+      const calcStatusEl = document.getElementById('calcStatus');
+      const calcMemoryEl = document.getElementById('calcMemory');
+      const calcLastEl = document.getElementById('calcLast');
+      const calcExpressionEl = document.getElementById('calcExpression');
+      const calcDisplayEl = document.getElementById('calcDisplay');
+      const calcPad = document.getElementById('calcPad');
 
       const HOLE_COUNT = 9;
       const GAME_TIME = 30;
@@ -298,6 +418,10 @@
       let snakeSpeedLabel = '正常';
       let snakeTickMs = 170;
       let touchStart = null;
+      let calcInput = '0';
+      let calcLastAns = Number(localStorage.getItem('calc-last') || 0);
+      let calcMemory = Number(localStorage.getItem('calc-mem') || 0);
+      let calcMode = localStorage.getItem('calc-mode') || 'DEG';
 
       bestEl.textContent = best;
       timeEl.textContent = timeLeft;
@@ -364,13 +488,16 @@
         menuView.hidden = view !== 'menu';
         whackView.hidden = view !== 'whack';
         snakeView.hidden = view !== 'snake';
+        calcView.hidden = view !== 'calc';
         // 額外用 display 控制，避免部分瀏覽器對 hidden/class 切換不同步
         menuView.style.display = view === 'menu' ? 'grid' : 'none';
         whackView.style.display = view === 'whack' ? 'grid' : 'none';
         snakeView.style.display = view === 'snake' ? 'grid' : 'none';
+        calcView.style.display = view === 'calc' ? 'grid' : 'none';
         menuView.classList.toggle('active', view === 'menu');
         whackView.classList.toggle('active', view === 'whack');
         snakeView.classList.toggle('active', view === 'snake');
+        calcView.classList.toggle('active', view === 'calc');
         if (view === 'whack') {
           updateWhackHud();
           setAudioState();
@@ -379,6 +506,96 @@
           updateSnakeHud();
           renderSnakeBoard();
           drawSnake();
+        }
+        if (view === 'calc') {
+          updateCalcHud();
+          renderCalcDisplay();
+        }
+      }
+
+      function updateCalcHud() {
+        calcModeChip.textContent = `模式：${calcMode}`;
+        calcStatusEl.textContent = '待機';
+        calcMemoryEl.textContent = String(calcMemory);
+        calcLastEl.textContent = String(calcLastAns);
+      }
+
+      function renderCalcDisplay() {
+        calcDisplayEl.value = calcInput || '0';
+      }
+
+      function appendCalcInput(token) {
+        if (calcInput === '0' && /[0-9.]/.test(token)) {
+          calcInput = token;
+        } else {
+          calcInput += token;
+        }
+        renderCalcDisplay();
+      }
+
+      function clearCalcInput() {
+        calcInput = '0';
+        calcExpressionEl.textContent = '';
+        calcStatusEl.textContent = '已清除';
+        renderCalcDisplay();
+      }
+
+      function backspaceCalcInput() {
+        if (calcInput.length <= 1) {
+          calcInput = '0';
+        } else {
+          calcInput = calcInput.slice(0, -1);
+        }
+        renderCalcDisplay();
+      }
+
+      function toggleCalcMode() {
+        calcMode = calcMode === 'DEG' ? 'RAD' : 'DEG';
+        localStorage.setItem('calc-mode', calcMode);
+        calcModeChip.textContent = `模式：${calcMode}`;
+      }
+
+      function evaluateCalcExpression() {
+        try {
+          const raw = calcInput
+            .replace(/ans/gi, String(calcLastAns))
+            .replace(/pi/gi, String(Math.PI))
+            .replace(/\^/g, '**');
+
+          if (!/^[0-9+\-*/().,\sA-Za-z*]+$/.test(raw)) {
+            throw new Error('字元不合法');
+          }
+
+          const fn = Function(
+            'expr',
+            'mode',
+            `
+              const toRad = (x) => mode === 'DEG' ? x * Math.PI / 180 : x;
+              const sin = (x) => Math.sin(toRad(x));
+              const cos = (x) => Math.cos(toRad(x));
+              const tan = (x) => Math.tan(toRad(x));
+              const sqrt = (x) => Math.sqrt(x);
+              const log = (x) => Math.log10(x);
+              const ln = (x) => Math.log(x);
+              return (${raw});
+            `
+          );
+
+          const result = fn(raw, calcMode);
+          if (!Number.isFinite(result)) {
+            throw new Error('結果不是有效數字');
+          }
+
+          calcExpressionEl.textContent = `${calcInput} =`;
+          calcLastAns = Number(result.toPrecision(12));
+          calcInput = String(calcLastAns);
+          calcLastEl.textContent = String(calcLastAns);
+          calcStatusEl.textContent = '完成';
+          localStorage.setItem('calc-last', String(calcLastAns));
+          renderCalcDisplay();
+        } catch (error) {
+          calcStatusEl.textContent = '錯誤';
+          calcExpressionEl.textContent = '請檢查公式';
         }
       }
 
@@ -658,6 +875,9 @@
           setView('snake');
           setTimeout(startSnakeGame, 0);
         }
+        if (target === 'calc') {
+          setView('calc');
+        }
       }
 
       openButtons.forEach((button) => {
@@ -682,6 +902,38 @@
         clearInterval(snakeInterval);
         snakeInterval = null;
         snakePauseBtn.textContent = '暫停';
+        setView('menu');
+      });
+
+      calcPad.addEventListener('click', (event) => {
+        const button = event.target.closest('button');
+        if (!button) return;
+
+        const action = button.dataset.calcAction;
+        const value = button.dataset.calcValue;
+
+        if (action === 'clear') {
+          clearCalcInput();
+          return;
+        }
+        if (action === 'backspace') {
+          backspaceCalcInput();
+          return;
+        }
+        if (action === 'toggleMode') {
+          toggleCalcMode();
+          return;
+        }
+        if (action === 'evaluate') {
+          evaluateCalcExpression();
+          return;
+        }
+        if (value) {
+          appendCalcInput(value);
+        }
+      });
+
+      calcBackBtn.addEventListener('click', () => {
         setView('menu');
       });
 
@@ -737,6 +989,8 @@
       setAudioState();
       updateWhackHud();
       updateSnakeHud();
+      updateCalcHud();
+      renderCalcDisplay();
       snakePauseBtn.textContent = '暫停';
       setView('menu');
     })();
