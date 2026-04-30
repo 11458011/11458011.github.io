@@ -364,6 +364,10 @@
         menuView.hidden = view !== 'menu';
         whackView.hidden = view !== 'whack';
         snakeView.hidden = view !== 'snake';
+        // 額外用 display 控制，避免部分瀏覽器對 hidden/class 切換不同步
+        menuView.style.display = view === 'menu' ? 'grid' : 'none';
+        whackView.style.display = view === 'whack' ? 'grid' : 'none';
+        snakeView.style.display = view === 'snake' ? 'grid' : 'none';
         menuView.classList.toggle('active', view === 'menu');
         whackView.classList.toggle('active', view === 'whack');
         snakeView.classList.toggle('active', view === 'snake');
@@ -644,18 +648,22 @@
       });
       snakeBoard.addEventListener('pointercancel', () => { touchStart = null; });
 
+      function openGameByTarget(target) {
+        if (target === 'whack') {
+          setView('whack');
+          // 延後一個 tick，確保視圖完成切換
+          setTimeout(startWhackGame, 0);
+        }
+        if (target === 'snake') {
+          setView('snake');
+          setTimeout(startSnakeGame, 0);
+        }
+      }
+
       openButtons.forEach((button) => {
-        button.addEventListener('click', () => {
-          const target = button.dataset.open;
-          if (target === 'whack') {
-            setView('whack');
-            startWhackGame();
-          }
-          if (target === 'snake') {
-            setView('snake');
-            startSnakeGame();
-          }
-        });
+        const handler = () => openGameByTarget(button.dataset.open);
+        button.addEventListener('click', handler);
+        button.addEventListener('pointerup', handler);
       });
 
       whackStartBtn.addEventListener('click', startWhackGame);
@@ -684,6 +692,12 @@
           left: [-1, 0],
           right: [1, 0],
         };
+        btn.addEventListener('touchstart', (event) => {
+          event.preventDefault();
+          const dir = btn.dataset.snakeDir;
+          const vector = map[dir];
+          if (vector) setSnakeDirection(vector[0], vector[1]);
+        }, { passive: false });
         btn.addEventListener('pointerdown', (event) => {
           event.preventDefault();
           const dir = btn.dataset.snakeDir;
