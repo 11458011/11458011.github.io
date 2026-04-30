@@ -350,6 +350,7 @@
         menuView.classList.toggle('active', view === 'menu');
         whackView.classList.toggle('active', view === 'whack');
         snakeView.classList.toggle('active', view === 'snake');
+        console.debug('setView ->', view);
         if (view === 'whack') {
           updateWhackHud();
           setAudioState();
@@ -369,7 +370,9 @@
           button.className = 'hole';
           button.setAttribute('aria-label', `第 ${index + 1} 個洞`);
           button.innerHTML = createMoleMarkup();
-          button.addEventListener('pointerdown', () => hitHole(button));
+          // 支援多種輸入事件，並加入除錯資訊
+          button.addEventListener('pointerdown', (e) => { console.debug('hole pointerdown', index); hitHole(button); });
+          button.addEventListener('click', (e) => { console.debug('hole click', index); hitHole(button); });
           board.appendChild(button);
           return button;
         });
@@ -434,6 +437,7 @@
       }
 
       function startWhackGame() {
+        console.debug('startWhackGame called');
         clearWhackTimers();
         score = 0;
         timeLeft = GAME_TIME;
@@ -558,6 +562,7 @@
       }
 
       function startSnakeGame() {
+        console.debug('startSnakeGame called');
         resetSnakeGame();
       }
 
@@ -591,15 +596,18 @@
       });
       snakeBoard.addEventListener('pointercancel', () => { touchStart = null; });
 
-      openButtons.forEach((button) => {
+      openButtons.forEach((button, idx) => {
         button.addEventListener('click', () => {
           const target = button.dataset.open;
+          console.debug('open button clicked', idx, target);
           if (target === 'whack') {
             setView('whack');
+            console.debug('starting whack game');
             startWhackGame();
           }
           if (target === 'snake') {
             setView('snake');
+            console.debug('starting snake game');
             startSnakeGame();
           }
         });
