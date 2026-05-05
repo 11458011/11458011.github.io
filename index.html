@@ -141,7 +141,18 @@
     .pulse { animation: pulse 0.24s ease-out; }
     @keyframes pulse { from { transform: scale(1); } 50% { transform: scale(1.12); } to { transform: scale(1); } }
     @media (max-width: 900px) { .menu { grid-template-columns: 1fr; } .view { padding: 12px; } .snake-wrap { aspect-ratio: auto; width: 100%; } }
-    @media (max-width: 560px) { body { overflow: auto; } .hero h1 { font-size: clamp(2.2rem, 14vw, 3.5rem); } .hud { grid-template-columns: 1fr; } .footer { flex-direction: column; align-items: stretch; } .controls, .footer .controls { width: 100%; } button.action { flex: 1 1 0; min-width: 0; } }
+    @media (max-width: 560px) { 
+      body { overflow: auto; } 
+      .hero h1 { font-size: clamp(2.2rem, 14vw, 3.5rem); } 
+      .hud { grid-template-columns: 1fr; } 
+      .footer { flex-direction: column; align-items: stretch; } 
+      .controls, .footer .controls { width: 100%; } 
+      button.action { flex: 1 1 0; min-width: 0; }
+      .snake-wrap { width: 100%; aspect-ratio: auto; min-height: auto; display: grid; grid-template-rows: auto auto auto; }
+      .snake-board { min-height: 280px; }
+      .snake-pad { grid-template-columns: repeat(3, 48px); grid-template-rows: repeat(2, 42px); }
+      .snake-pad button { padding: 6px; font-size: 0.9rem; }
+    }
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }
   </style>
 </head>
