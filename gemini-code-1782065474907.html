@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sam 聊天視窗</title>
+    <style>
+        :root {
+            --bg-color: #fcf8f2;       /* 圖片中的暖米色背景 */
+            --panel-bg: #ffffff;
+            --card-bg: #fffbf7;        /* 側邊欄卡片的微黃底色 */
+            --accent-orange: #d97743;  /* 圖片中的暖橘色 */
+            --accent-orange-hover: #bd5e2b;
+            --text-main: #4a3e3d;      /* 帶有暖調的深色字體 */
+            --text-muted: #8c7e7c;
+            --border-color: #f3ece4;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            display: flex;
+            height: 100vh;
+            padding: 16px;
+            gap: 16px;
+            color: var(--text-main);
+        }
+
+        /* 左側設定面板 */
+        .sidebar {
+            width: 280px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        /* 側邊欄卡片通用樣式 */
+        .sidebar-card {
+            background-color: var(--card-bg);
+            border-radius: 20px;
+            padding: 16px;
+            border: 1px solid var(--border-color);
+        }
+
+        /* 頂部標題卡片 */
+        .header-card {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+        .orange-avatar {
+            background-color: var(--accent-orange);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        .header-card .title-area h2 {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .header-card .title-area p {
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        /* 聊天概況卡片 */
+        .card-title {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+        .status-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .status-item {
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 10px;
+        }
+        .status-item .label {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+        .status-item .value {
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        /* 快速指令卡片 */
+        .tag-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .cmd-tag {
+            background: #fff;
+            border: 1px solid var(--border-color);
+            padding: 6px 12px;
+            border-radius: 14px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .cmd-tag:hover {
+            border-color: var(--accent-orange);
+            color: var(--accent-orange);
+        }
+
+        /* ntfy 設定卡片 */
+        .input-group {
+            margin-bottom: 10px;
+        }
+        .input-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        .input-text {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 14px;
+            outline: none;
+            background: #fff;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+        .checkbox-group input {
+            width: 14px;
+            height: 14px;
+            accent-color: var(--accent-orange);
+        }
+        .action-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-sm {
+            padding: 6px 12px;
+            border: 1px solid var(--border-color);
+            background: #fff;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .btn-sm:hover { background: #faf5ef; }
+        .ntfy-status {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* 聯絡人卡片 */
+        .contact-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #fff;
+            padding: 8px 12px;
+            border-radius: 14px;
+            border: 1px solid var(--border-color);
+            position: relative;
+        }
+        .ux-avatar {
+            background-color: #d97743;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .contact-info h4 { font-size: 13px; font-weight: 700; }
+        .contact-info p { font-size: 11px; color: var(--text-muted); }
+        .dot {
+            width: 8px;
+            height: 8px;
+            background-color: #eab308;
+            border-radius: 50%;
+            position: absolute;
+            right: 12px;
+        }
+
+        /* 右側聊天主視窗 */
+        .chat-container {
+            flex: 1;
+            background-color: var(--panel-bg);
+            border-radius: 24px;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        /* 頂部導覽列 */
+        .chat-header {
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .cyan-avatar {
+            background-color: #72b2b4;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .user-status h3 { font-size: 14px; font-weight: 700; }
+        .user-status p { font-size: 11px; color: var(--text-muted); }
+        
+        .header-right {
+            display: flex;
+            gap: 6px;
+        }
+        .header-btn {
+            background: #fdfbf7;
+            border: 1px solid var(--border-color);
+            padding: 6px 12px;
+            border-radius: 14px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        /* 訊息區 */
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        .date-divider {
+            align-self: center;
+            background: #f5ede4;
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin: 10px 0;
+        }
+
+        /* 訊息氣泡 */
+        .message {
+            max-width: 70%;
+            padding: 16px;
+            border-radius: 16px;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-top: 12px;
+            position: relative;
+            word-break: break-all;
+        }
+
+        .message.system-alert {
+            background-color: #fff7ed;
+            border: 1px solid #ffedd5;
+            color: #7c2d12;
+            align-self: flex-start;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(217, 119, 67, 0.05);
+        }
+        .message.system-alert .meta {
+            font-size: 11px;
+            color: #9a3412;
+            margin-top: 8px;
+        }
+
+        .message.user {
+            background-color: #fdfbf7;
+            border: 1px solid var(--border-color);
+            align-self: flex-end;
+        }
+        .message.ai {
+            background-color: #f5ede4;
+            color: var(--text-main);
+            align-self: flex-start;
+        }
+
+        /* 下方輸入區 */
+        .chat-footer {
+            padding: 16px 20px;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .suggestion-row {
+            display: flex;
+            gap: 8px;
+        }
+        .suggest-tag {
+            background: #fff;
+            border: 1px solid var(--border-color);
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .input-box-wrapper {
+            display: flex;
+            align-items: center;
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 6px 6px 6px 16px;
+        }
+        .btn-plus {
+            width: 32px;
+            height: 32px;
+            background: #fff7ed;
+            border: none;
+            border-radius: 50%;
+            color: var(--accent-orange);
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+        }
+        .input-box-wrapper textarea {
+            flex: 1;
+            border: none;
+            outline: none;
+            resize: none;
+            height: 24px;
+            font-size: 14px;
+            color: var(--text-main);
+            line-height: 24px;
+        }
+        .btn-submit {
+            background-color: var(--accent-orange);
+            color: white;
+            border: none;
+            padding: 8px 24px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-submit:hover {
+            background-color: var(--accent-orange-hover);
+        }
+        .bottom-counter {
+            font-size: 12px;
+            color: var(--text-muted);
+            padding-left: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        
+        <div class="sidebar-card header-card">
+            <div class="orange-avatar">5</div>
+            <div class="title-area">
+                <h2>聊天對話窗</h2>
+                <p>一個可互動的乾淨介面，適合展示訊息、側邊欄與輸入區。</p>
+            </div>
+        </div>
+
+        <div class="sidebar-card">
+            <div class="card-title">聊天概況</div>
+            <div class="status-grid">
+                <div class="status-item">
+                    <div class="label">連線狀態</div>
+                    <div class="value" id="connStatus" style="color: #2b6cb0;">未連線</div>
+                </div>
+                <div class="status-item">
+                    <div class="label">訊息數</div>
+                    <div class="value" id="msgCount">0</div>
+                </div>
+                <div class="status-item">
+                    <div class="label">回應時間</div>
+                    <div class="value">即時</div>
+                </div>
+                <div class="status-item">
+                    <div class="label">模式</div>
+                    <div class="value">ntfy</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar-card">
+            <div class="card-title">快速指令</div>
+            <div class="tag-group">
+                <div class="cmd-tag" onclick="useCmd('整理待辦')">整理待辦</div>
+                <div class="cmd-tag" onclick="useCmd('改寫文字')">改寫文字</div>
+                <div class="cmd-tag" onclick="useCmd('設計靈感')">設計靈感</div>
+                <div class="cmd-tag" onclick="useCmd('簡短回覆')">簡短回覆</div>
+            </div>
+        </div>
+
+        <div class="sidebar-card">
+            <div class="card-title">ntfy.sh</div>
+            <div class="input-group">
+                <label>Topic</label>
+                <input type="text" id="ntfyTopic" class="input-text" value="drher">
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="syncNtfy" checked>
+                <label for="syncNtfy">送出訊息時同步推播到 ntfy.sh</label>
+            </div>
+            <div class="action-row">
+                <button class="btn-sm" id="btnConnectNtfy">重新連線</button>
+                <span class="ntfy-status" id="ntfyStatus">尚未連線</span>
+            </div>
+        </div>
+
+        <div class="sidebar-card">
+            <div class="card-title">聯絡人</div>
+            <div class="contact-box">
+                <div class="ux-avatar">UX</div>
+                <div class="contact-info">
+                    <h4>視覺夥伴</h4>
+                    <p>提供配色、排版與互動提示。</p>
+                </div>
+                <div class="dot"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="chat-container">
+        
+        <div class="chat-header">
+            <div class="header-left">
+                <div class="cyan-avatar">S</div>
+                <div class="user-status">
+                    <h3>Sam 聊天視窗</h3>
+                    <p>即時連線 · ntfy 雙向模式</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="header-btn">搜尋</button>
+                <button class="header-btn">詳情</button>
+                <button class="header-btn">更多</button>
+            </div>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+            <div class="date-divider">今天</div>
+            
+            <div class="message system-alert" id="initCard">
+                <p>尚無訊息，請在下方輸入內容發送，或等待該 ntfy 頻道接收外部新訊息。</p>
+                <div class="meta">系統 · 現在</div>
+            </div>
+        </div>
+
+        <div class="chat-footer">
+            <div class="suggestion-row">
+                <div class="suggest-tag" onclick="useCmd('更自然')">更自然</div>
+                <div class="suggest-tag" onclick="useCmd('頁面優化')">頁面優化</div>
+                <div class="suggest-tag" onclick="useCmd('標題建議')">標題建議</div>
+            </div>
+
+            <div class="input-box-wrapper">
+                <button class="btn-plus">+</button>
+                <textarea id="userInput" placeholder="輸入訊息，按 Enter 送出，Shift+Enter 換行"></textarea>
+                <button class="btn-submit" id="sendBtn">送出</button>
+            </div>
+            <div class="bottom-counter"><span id="charCount">0</span> 字元</div>
+        </div>
+
+    </div>
+
+    <script>
+        const chatMessages = document.getElementById('chatMessages');
+        const userInput = document.getElementById('userInput');
+        const charCount = document.getElementById('charCount');
+        const sendBtn = document.getElementById('sendBtn');
+        const msgCountElement = document.getElementById('msgCount');
+        const connStatusElement = document.getElementById('connStatus');
+        const ntfyTopicInput = document.getElementById('ntfyTopic');
+        const ntfyStatus = document.getElementById('ntfyStatus');
+        const btnConnectNtfy = document.getElementById('btnConnectNtfy');
+        const syncNtfyCheckbox = document.getElementById('syncNtfy');
+
+        let totalMessages = 0;
+        let eventSource = null;
+
+        // 即時計算字數
+        userInput.addEventListener('input', () => {
+            charCount.textContent = userInput.value.length;
+        });
+
+        // 快速標籤點擊填入
+        function useCmd(text) {
+            userInput.value = text;
+            charCount.textContent = text.length;
+            userInput.focus();
+        }
+
+        // 新增對話氣泡
+        function appendMessage(text, sender) {
+            // 移除初始提示卡片
+            const initCard = document.getElementById('initCard');
+            if (initCard) initCard.remove();
+
+            const msgDiv = document.createElement('div');
+            msgDiv.classList.add('message', sender);
+            msgDiv.innerText = text;
+            chatMessages.appendChild(msgDiv);
+            
+            // 自動捲動
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // 更新計數器
+            totalMessages++;
+            msgCountElement.textContent = totalMessages;
+        }
+
+        // 送出訊息
+        function handleSend() {
+            const text = userInput.value.trim();
+            if (!text) return;
+
+            // 1. 渲染自己送出的訊息（右側白底卡片氣泡）
+            appendMessage(text, 'user');
+            userInput.value = '';
+            charCount.textContent = '0';
+
+            // 2. 如果勾選同步，則發送到 ntfy.sh
+            if (syncNtfyCheckbox.checked) {
+                sendToNtfy(text);
+            }
+        }
+
+        // 串接 ntfy.sh 發送 (POST)
+        function sendToNtfy(text) {
+            const topic = ntfyTopicInput.value.trim();
+            if (!topic) return;
+
+            fetch(`https://ntfy.sh/${topic}`, {
+                method: 'POST',
+                body: text
+            })
+            .catch(err => console.error('ntfy 發送失敗:', err));
+        }
+
+        // 監聽 ntfy.sh 即時接收訊息 (SSE)
+        function connectNtfy() {
+            if (eventSource) {
+                eventSource.close();
+            }
+
+            const topic = ntfyTopicInput.value.trim();
+            if (!topic) {
+                ntfyStatus.textContent = '請輸入 Topic';
+                return;
+            }
+
+            ntfyStatus.textContent = `連線中...`;
+            eventSource = new EventSource(`https://ntfy.sh/${topic}/sse`);
+
+            eventSource.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                // 只有當事件為 message 且有內容時才處理
+                if (data.event === 'message' && data.message) {
+                    // 為了避免重複在畫面上看到自己發出的文字，進行簡單過濾
+                    // 如果你想要所有外部裝置發過來的訊息都顯示，這裏會自動接收
+                    appendMessage(data.message, 'ai');
+                }
+            };
+
+            eventSource.onopen = () => {
+                ntfyStatus.textContent = `已連線到 ${topic}`;
+                ntfyStatus.style.color = '#d97743';
+                connStatusElement.textContent = '已連線';
+                connStatusElement.style.color = '#2b6cb0';
+            };
+
+            eventSource.onerror = () => {
+                ntfyStatus.textContent = '連線中斷';
+                ntfyStatus.style.color = 'red';
+                connStatusElement.textContent = '中斷重連';
+                connStatusElement.style.color = 'red';
+            };
+        }
+
+        // 按鍵與事件綁定
+        sendBtn.addEventListener('click', handleSend);
+        userInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+            }
+        });
+
+        btnConnectNtfy.addEventListener('click', connectNtfy);
+
+        // 網頁開啟時自動連線預設頻道
+        connectNtfy();
+    </script>
+</body>
+</html>
