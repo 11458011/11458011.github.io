@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Sam 聊天視窗</title>
     <style>
         :root {
@@ -21,7 +21,7 @@
             margin: 0;
             padding: 0;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            -webkit-tap-highlight-color: transparent; /* 移除手機點擊高亮 */
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
@@ -31,10 +31,10 @@
             padding: 16px;
             gap: 16px;
             color: var(--text-main);
-            overflow: hidden; /* 防止身體捲動，讓聊天室捲動 */
+            overflow: hidden;
         }
 
-        /* 左側設定面板 - 預設在手機上隱藏 */
+        /* 左側設定面板 - 預設隱藏，手機板點擊選單才滑出 */
         .sidebar {
             width: 280px;
             display: flex;
@@ -44,28 +44,6 @@
             padding-right: 4px;
             flex-shrink: 0;
             transition: transform 0.3s ease;
-        }
-
-        /* 手機模式下的隱藏邏輯 */
-        @media (max-width: 768px) {
-            body {
-                padding: 0; /* 手機全螢幕 */
-                gap: 0;
-            }
-            .sidebar {
-                position: fixed;
-                left: 0;
-                top: 0;
-                height: 100vh;
-                background-color: var(--bg-color);
-                z-index: 100;
-                transform: translateX(-100%); /* 隱藏 */
-                padding: 20px;
-                box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-            }
-            .sidebar.active {
-                transform: translateX(0); /* 顯示 */
-            }
         }
 
         /* 側邊欄卡片通用樣式 */
@@ -252,13 +230,6 @@
             height: 100%;
         }
 
-        @media (max-width: 768px) {
-            .chat-container {
-                border-radius: 0;
-                border: none;
-            }
-        }
-
         /* 頂部導覽列 */
         .chat-header {
             padding: 12px 20px;
@@ -273,22 +244,15 @@
             gap: 12px;
         }
         
-        /* 手機板設定開關按鈕 */
+        /* 漢堡選單按鈕 */
         .menu-toggle {
             display: none;
             background: none;
             border: none;
-            font-size: 20px;
+            font-size: 24px;
             color: var(--text-main);
             cursor: pointer;
-            padding: 5px;
-        }
-
-        @media (max-width: 768px) {
-            .menu-toggle { display: block; }
-            .header-left .cyan-avatar { width: 30px; height: 30px; font-size: 12px; }
-            .user-status h3 { font-size: 13px; }
-            .chat-header { padding: 10px 15px; }
+            padding: 4px;
         }
 
         .cyan-avatar {
@@ -319,9 +283,6 @@
             font-weight: 700;
             cursor: pointer;
         }
-        @media (max-width: 768px) {
-            .header-right { display: none; } /* 隱藏更多按鈕 */
-        }
 
         /* 訊息區 */
         .chat-messages {
@@ -330,7 +291,7 @@
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            -webkit-overflow-scrolling: touch; /* 手機流暢捲動 */
+            -webkit-overflow-scrolling: touch;
         }
         .date-divider {
             align-self: center;
@@ -353,10 +314,6 @@
             margin-top: 12px;
             position: relative;
             word-break: break-all;
-        }
-
-        @media (max-width: 768px) {
-            .message { max-width: 85%; padding: 12px; } /* 手機訊息變寬 */
         }
 
         .message.system-alert {
@@ -394,14 +351,10 @@
             border-top: 1px solid var(--border-color);
         }
 
-        @media (max-width: 768px) {
-            .chat-footer { padding: 10px; }
-        }
-
         .suggestion-row {
             display: flex;
             gap: 8px;
-            overflow-x: auto; /* 手機板建議標籤可橫向捲動 */
+            overflow-x: auto;
             padding-bottom: 4px;
             -webkit-overflow-scrolling: touch;
         }
@@ -413,7 +366,7 @@
             font-size: 12px;
             font-weight: 500;
             cursor: pointer;
-            white-space: nowrap; /* 建議不換行 */
+            white-space: nowrap;
         }
 
         .input-box-wrapper {
@@ -460,9 +413,6 @@
             cursor: pointer;
             transition: background 0.2s;
         }
-        @media (max-width: 768px) {
-            .btn-submit { padding: 8px 16px; } /* 手機按鈕變小點 */
-        }
         .btn-submit:hover {
             background-color: var(--accent-orange-hover);
         }
@@ -472,7 +422,7 @@
             padding-left: 4px;
         }
         
-        /* 側邊欄遮罩 */
+        /* 側邊欄黑色半透明遮罩 */
         .sidebar-overlay {
             display: none;
             position: fixed;
@@ -483,8 +433,70 @@
             background: rgba(0,0,0,0.4);
             z-index: 99;
         }
-        @media (max-width: 768px) {
-            .sidebar-overlay.active { display: block; }
+
+        /* 📱 核心手機響應式樣式修正 (強制寬度與防縮放) */
+        @media screen and (max-width: 768px) {
+            body {
+                padding: 0 !important;
+                gap: 0 !important;
+            }
+            
+            /* 側邊欄變為全螢幕抽屜式 */
+            .sidebar {
+                position: fixed !important;
+                left: 0 !important;
+                top: 0 !important;
+                height: 100vh !important;
+                width: 290px !important;
+                background-color: var(--bg-color) !important;
+                z-index: 100 !important;
+                transform: translateX(-100%);
+                padding: 20px !important;
+                box-shadow: 4px 0 15px rgba(0,0,0,0.1);
+            }
+            .sidebar.active {
+                transform: translateX(0) !important;
+            }
+            .sidebar-overlay.active {
+                display: block !important;
+            }
+
+            /* 聊天視窗強制滿版，不留任何邊距 */
+            .chat-container {
+                border-radius: 0 !important;
+                border: none !important;
+                width: 100vw !important;
+                max-width: 100vw !important;
+            }
+
+            .menu-toggle {
+                display: block !important; /* 顯示左上角漢堡選單 */
+            }
+
+            .chat-header {
+                padding: 12px 14px !important;
+            }
+
+            .header-right {
+                display: none !important; /* 手機版隱藏右側按鈕騰出空間 */
+            }
+
+            /* 讓對話氣泡更寬敞 */
+            .chat-messages {
+                padding: 12px !important;
+            }
+            .message {
+                max-width: 92% !important; /* 氣泡寬度擴展到 92%，極致舒適 */
+                padding: 12px 14px !important;
+                margin-top: 10px !important;
+            }
+
+            .chat-footer {
+                padding: 10px 12px !important;
+            }
+            .btn-submit {
+                padding: 8px 16px !important;
+            }
         }
     </style>
 </head>
@@ -545,4 +557,198 @@
                 <label for="syncNtfy">送出訊息時同步推播到 ntfy.sh</label>
             </div>
             <div class="action-row">
-                <button class="btn-sm" id="
+                <button class="btn-sm" id="btnConnectNtfy">重新連線</button>
+                <span class="ntfy-status" id="ntfyStatus">尚未連線</span>
+            </div>
+        </div>
+
+        <div class="sidebar-card">
+            <div class="card-title">聯絡人</div>
+            <div class="contact-box">
+                <div class="ux-avatar">UX</div>
+                <div class="contact-info">
+                    <h4>視覺夥伴</h4>
+                    <p>提供配色、排版與互動提示。</p>
+                </div>
+                <div class="dot"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="chat-container">
+        
+        <div class="chat-header">
+            <div class="header-left">
+                <button class="menu-toggle" id="menuToggle">☰</button>
+                <div class="cyan-avatar">S</div>
+                <div class="user-status">
+                    <h3>Sam 聊天視窗</h3>
+                    <p>即時連線 · ntfy 雙向模式</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="header-btn">搜尋</button>
+                <button class="header-btn">詳情</button>
+                <button class="header-btn">更多</button>
+            </div>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+            <div class="date-divider">今天</div>
+            
+            <div class="message system-alert" id="initCard">
+                <p>尚無訊息，請在下方輸入內容發送，或等待該 ntfy 頻道接收外部新訊息。</p>
+                <div class="meta">系統 · 現在</div>
+            </div>
+        </div>
+
+        <div class="chat-footer">
+            <div class="suggestion-row">
+                <div class="suggest-tag" onclick="useCmd('更自然')">更自然</div>
+                <div class="suggest-tag" onclick="useCmd('頁面優化')">頁面優化</div>
+                <div class="suggest-tag" onclick="useCmd('標題建議')">標題建議</div>
+            </div>
+
+            <div class="input-box-wrapper">
+                <button class="btn-plus">+</button>
+                <textarea id="userInput" placeholder="輸入訊息，按 Enter 送出"></textarea>
+                <button class="btn-submit" id="sendBtn">送出</button>
+            </div>
+            <div class="bottom-counter"><span id="charCount">0</span> 字元</div>
+        </div>
+
+    </div>
+
+    <script>
+        const chatMessages = document.getElementById('chatMessages');
+        const userInput = document.getElementById('userInput');
+        const charCount = document.getElementById('charCount');
+        const sendBtn = document.getElementById('sendBtn');
+        const msgCountElement = document.getElementById('msgCount');
+        const connStatusElement = document.getElementById('connStatus');
+        const ntfyTopicInput = document.getElementById('ntfyTopic');
+        const ntfyStatus = document.getElementById('ntfyStatus');
+        const btnConnectNtfy = document.getElementById('btnConnectNtfy');
+        const syncNtfyCheckbox = document.getElementById('syncNtfy');
+        
+        // 手機板側邊欄控制
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+
+        menuToggle.addEventListener('click', toggleSidebar);
+        overlay.addEventListener('click', toggleSidebar);
+
+        let totalMessages = 0;
+        let eventSource = null;
+
+        // 即時計算字數
+        userInput.addEventListener('input', () => {
+            charCount.textContent = userInput.value.length;
+        });
+
+        // 快速標籤點擊填入
+        function useCmd(text) {
+            userInput.value = text;
+            charCount.textContent = text.length;
+            userInput.focus();
+        }
+
+        // 新增對話氣泡
+        function appendMessage(text, sender) {
+            const initCard = document.getElementById('initCard');
+            if (initCard) initCard.remove();
+
+            const msgDiv = document.createElement('div');
+            msgDiv.classList.add('message', sender);
+            msgDiv.innerText = text;
+            chatMessages.appendChild(msgDiv);
+            
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            totalMessages++;
+            msgCountElement.textContent = totalMessages;
+        }
+
+        // 送出訊息
+        function handleSend() {
+            const text = userInput.value.trim();
+            if (!text) return;
+
+            appendMessage(text, 'user');
+            userInput.value = '';
+            charCount.textContent = '0';
+
+            if (syncNtfyCheckbox.checked) {
+                sendToNtfy(text);
+            }
+        }
+
+        // 串接 ntfy.sh 發送 (POST)
+        function sendToNtfy(text) {
+            const topic = ntfyTopicInput.value.trim();
+            if (!topic) return;
+
+            fetch(`https://ntfy.sh/${topic}`, {
+                method: 'POST',
+                body: text
+            })
+            .catch(err => console.error('ntfy 發送失敗:', err));
+        }
+
+        // 監聽 ntfy.sh 即時接收訊息 (SSE)
+        function connectNtfy() {
+            if (eventSource) {
+                eventSource.close();
+            }
+
+            const topic = ntfyTopicInput.value.trim();
+            if (!topic) {
+                ntfyStatus.textContent = '請輸入 Topic';
+                return;
+            }
+
+            ntfyStatus.textContent = `連線中...`;
+            eventSource = new EventSource(`https://ntfy.sh/${topic}/sse`);
+
+            eventSource.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                if (data.event === 'message' && data.message) {
+                    appendMessage(data.message, 'ai');
+                }
+            };
+
+            eventSource.onopen = () => {
+                ntfyStatus.textContent = `已連線到 ${topic}`;
+                ntfyStatus.style.color = '#d97743';
+                connStatusElement.textContent = '已連線';
+                connStatusElement.style.color = '#2b6cb0';
+            };
+
+            eventSource.onerror = () => {
+                ntfyStatus.textContent = '連線中斷';
+                ntfyStatus.style.color = 'red';
+                connStatusElement.textContent = '中斷重連';
+                connStatusElement.style.color = 'red';
+            };
+        }
+
+        sendBtn.addEventListener('click', handleSend);
+        userInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+            }
+        });
+
+        btnConnectNtfy.addEventListener('click', connectNtfy);
+        connectNtfy();
+    </script>
+</body>
+</html>
