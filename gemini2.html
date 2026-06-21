@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sam 聊天視窗</title>
     <style>
         :root {
@@ -21,6 +21,7 @@
             margin: 0;
             padding: 0;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent; /* 移除手機點擊高亮 */
         }
 
         body {
@@ -30,9 +31,10 @@
             padding: 16px;
             gap: 16px;
             color: var(--text-main);
+            overflow: hidden; /* 防止身體捲動，讓聊天室捲動 */
         }
 
-        /* 左側設定面板 */
+        /* 左側設定面板 - 預設在手機上隱藏 */
         .sidebar {
             width: 280px;
             display: flex;
@@ -40,6 +42,30 @@
             gap: 12px;
             overflow-y: auto;
             padding-right: 4px;
+            flex-shrink: 0;
+            transition: transform 0.3s ease;
+        }
+
+        /* 手機模式下的隱藏邏輯 */
+        @media (max-width: 768px) {
+            body {
+                padding: 0; /* 手機全螢幕 */
+                gap: 0;
+            }
+            .sidebar {
+                position: fixed;
+                left: 0;
+                top: 0;
+                height: 100vh;
+                background-color: var(--bg-color);
+                z-index: 100;
+                transform: translateX(-100%); /* 隱藏 */
+                padding: 20px;
+                box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            }
+            .sidebar.active {
+                transform: translateX(0); /* 顯示 */
+            }
         }
 
         /* 側邊欄卡片通用樣式 */
@@ -223,6 +249,14 @@
             flex-direction: column;
             border: 1px solid var(--border-color);
             overflow: hidden;
+            height: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .chat-container {
+                border-radius: 0;
+                border: none;
+            }
         }
 
         /* 頂部導覽列 */
@@ -238,6 +272,25 @@
             align-items: center;
             gap: 12px;
         }
+        
+        /* 手機板設定開關按鈕 */
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: var(--text-main);
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .menu-toggle { display: block; }
+            .header-left .cyan-avatar { width: 30px; height: 30px; font-size: 12px; }
+            .user-status h3 { font-size: 13px; }
+            .chat-header { padding: 10px 15px; }
+        }
+
         .cyan-avatar {
             background-color: #72b2b4;
             color: white;
@@ -266,6 +319,9 @@
             font-weight: 700;
             cursor: pointer;
         }
+        @media (max-width: 768px) {
+            .header-right { display: none; } /* 隱藏更多按鈕 */
+        }
 
         /* 訊息區 */
         .chat-messages {
@@ -274,6 +330,7 @@
             overflow-y: auto;
             display: flex;
             flex-direction: column;
+            -webkit-overflow-scrolling: touch; /* 手機流暢捲動 */
         }
         .date-divider {
             align-self: center;
@@ -296,6 +353,10 @@
             margin-top: 12px;
             position: relative;
             word-break: break-all;
+        }
+
+        @media (max-width: 768px) {
+            .message { max-width: 85%; padding: 12px; } /* 手機訊息變寬 */
         }
 
         .message.system-alert {
@@ -330,10 +391,19 @@
             display: flex;
             flex-direction: column;
             gap: 12px;
+            border-top: 1px solid var(--border-color);
         }
+
+        @media (max-width: 768px) {
+            .chat-footer { padding: 10px; }
+        }
+
         .suggestion-row {
             display: flex;
             gap: 8px;
+            overflow-x: auto; /* 手機板建議標籤可橫向捲動 */
+            padding-bottom: 4px;
+            -webkit-overflow-scrolling: touch;
         }
         .suggest-tag {
             background: #fff;
@@ -343,6 +413,7 @@
             font-size: 12px;
             font-weight: 500;
             cursor: pointer;
+            white-space: nowrap; /* 建議不換行 */
         }
 
         .input-box-wrapper {
@@ -376,6 +447,7 @@
             font-size: 14px;
             color: var(--text-main);
             line-height: 24px;
+            background: transparent;
         }
         .btn-submit {
             background-color: var(--accent-orange);
@@ -388,6 +460,9 @@
             cursor: pointer;
             transition: background 0.2s;
         }
+        @media (max-width: 768px) {
+            .btn-submit { padding: 8px 16px; } /* 手機按鈕變小點 */
+        }
         .btn-submit:hover {
             background-color: var(--accent-orange-hover);
         }
@@ -396,11 +471,28 @@
             color: var(--text-muted);
             padding-left: 4px;
         }
+        
+        /* 側邊欄遮罩 */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.4);
+            z-index: 99;
+        }
+        @media (max-width: 768px) {
+            .sidebar-overlay.active { display: block; }
+        }
     </style>
 </head>
 <body>
 
-    <div class="sidebar">
+    <div class="sidebar-overlay" id="overlay"></div>
+
+    <div class="sidebar" id="sidebar">
         
         <div class="sidebar-card header-card">
             <div class="orange-avatar">5</div>
@@ -453,195 +545,4 @@
                 <label for="syncNtfy">送出訊息時同步推播到 ntfy.sh</label>
             </div>
             <div class="action-row">
-                <button class="btn-sm" id="btnConnectNtfy">重新連線</button>
-                <span class="ntfy-status" id="ntfyStatus">尚未連線</span>
-            </div>
-        </div>
-
-        <div class="sidebar-card">
-            <div class="card-title">聯絡人</div>
-            <div class="contact-box">
-                <div class="ux-avatar">UX</div>
-                <div class="contact-info">
-                    <h4>視覺夥伴</h4>
-                    <p>提供配色、排版與互動提示。</p>
-                </div>
-                <div class="dot"></div>
-            </div>
-        </div>
-
-    </div>
-
-    <div class="chat-container">
-        
-        <div class="chat-header">
-            <div class="header-left">
-                <div class="cyan-avatar">S</div>
-                <div class="user-status">
-                    <h3>Sam 聊天視窗</h3>
-                    <p>即時連線 · ntfy 雙向模式</p>
-                </div>
-            </div>
-            <div class="header-right">
-                <button class="header-btn">搜尋</button>
-                <button class="header-btn">詳情</button>
-                <button class="header-btn">更多</button>
-            </div>
-        </div>
-
-        <div class="chat-messages" id="chatMessages">
-            <div class="date-divider">今天</div>
-            
-            <div class="message system-alert" id="initCard">
-                <p>尚無訊息，請在下方輸入內容發送，或等待該 ntfy 頻道接收外部新訊息。</p>
-                <div class="meta">系統 · 現在</div>
-            </div>
-        </div>
-
-        <div class="chat-footer">
-            <div class="suggestion-row">
-                <div class="suggest-tag" onclick="useCmd('更自然')">更自然</div>
-                <div class="suggest-tag" onclick="useCmd('頁面優化')">頁面優化</div>
-                <div class="suggest-tag" onclick="useCmd('標題建議')">標題建議</div>
-            </div>
-
-            <div class="input-box-wrapper">
-                <button class="btn-plus">+</button>
-                <textarea id="userInput" placeholder="輸入訊息，按 Enter 送出，Shift+Enter 換行"></textarea>
-                <button class="btn-submit" id="sendBtn">送出</button>
-            </div>
-            <div class="bottom-counter"><span id="charCount">0</span> 字元</div>
-        </div>
-
-    </div>
-
-    <script>
-        const chatMessages = document.getElementById('chatMessages');
-        const userInput = document.getElementById('userInput');
-        const charCount = document.getElementById('charCount');
-        const sendBtn = document.getElementById('sendBtn');
-        const msgCountElement = document.getElementById('msgCount');
-        const connStatusElement = document.getElementById('connStatus');
-        const ntfyTopicInput = document.getElementById('ntfyTopic');
-        const ntfyStatus = document.getElementById('ntfyStatus');
-        const btnConnectNtfy = document.getElementById('btnConnectNtfy');
-        const syncNtfyCheckbox = document.getElementById('syncNtfy');
-
-        let totalMessages = 0;
-        let eventSource = null;
-
-        // 即時計算字數
-        userInput.addEventListener('input', () => {
-            charCount.textContent = userInput.value.length;
-        });
-
-        // 快速標籤點擊填入
-        function useCmd(text) {
-            userInput.value = text;
-            charCount.textContent = text.length;
-            userInput.focus();
-        }
-
-        // 新增對話氣泡
-        function appendMessage(text, sender) {
-            // 移除初始提示卡片
-            const initCard = document.getElementById('initCard');
-            if (initCard) initCard.remove();
-
-            const msgDiv = document.createElement('div');
-            msgDiv.classList.add('message', sender);
-            msgDiv.innerText = text;
-            chatMessages.appendChild(msgDiv);
-            
-            // 自動捲動
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-
-            // 更新計數器
-            totalMessages++;
-            msgCountElement.textContent = totalMessages;
-        }
-
-        // 送出訊息
-        function handleSend() {
-            const text = userInput.value.trim();
-            if (!text) return;
-
-            // 1. 渲染自己送出的訊息（右側白底卡片氣泡）
-            appendMessage(text, 'user');
-            userInput.value = '';
-            charCount.textContent = '0';
-
-            // 2. 如果勾選同步，則發送到 ntfy.sh
-            if (syncNtfyCheckbox.checked) {
-                sendToNtfy(text);
-            }
-        }
-
-        // 串接 ntfy.sh 發送 (POST)
-        function sendToNtfy(text) {
-            const topic = ntfyTopicInput.value.trim();
-            if (!topic) return;
-
-            fetch(`https://ntfy.sh/${topic}`, {
-                method: 'POST',
-                body: text
-            })
-            .catch(err => console.error('ntfy 發送失敗:', err));
-        }
-
-        // 監聽 ntfy.sh 即時接收訊息 (SSE)
-        function connectNtfy() {
-            if (eventSource) {
-                eventSource.close();
-            }
-
-            const topic = ntfyTopicInput.value.trim();
-            if (!topic) {
-                ntfyStatus.textContent = '請輸入 Topic';
-                return;
-            }
-
-            ntfyStatus.textContent = `連線中...`;
-            eventSource = new EventSource(`https://ntfy.sh/${topic}/sse`);
-
-            eventSource.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                // 只有當事件為 message 且有內容時才處理
-                if (data.event === 'message' && data.message) {
-                    // 為了避免重複在畫面上看到自己發出的文字，進行簡單過濾
-                    // 如果你想要所有外部裝置發過來的訊息都顯示，這裏會自動接收
-                    appendMessage(data.message, 'ai');
-                }
-            };
-
-            eventSource.onopen = () => {
-                ntfyStatus.textContent = `已連線到 ${topic}`;
-                ntfyStatus.style.color = '#d97743';
-                connStatusElement.textContent = '已連線';
-                connStatusElement.style.color = '#2b6cb0';
-            };
-
-            eventSource.onerror = () => {
-                ntfyStatus.textContent = '連線中斷';
-                ntfyStatus.style.color = 'red';
-                connStatusElement.textContent = '中斷重連';
-                connStatusElement.style.color = 'red';
-            };
-        }
-
-        // 按鍵與事件綁定
-        sendBtn.addEventListener('click', handleSend);
-        userInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSend();
-            }
-        });
-
-        btnConnectNtfy.addEventListener('click', connectNtfy);
-
-        // 網頁開啟時自動連線預設頻道
-        connectNtfy();
-    </script>
-</body>
-</html>
+                <button class="btn-sm" id="
