@@ -3,390 +3,316 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>和 AI 對話的工作台</title>
+    <title>Gemini AI 智能助理</title>
     <style>
         :root {
-            --bg-page: #f0f4f9;
-            --bg-sidebar: #f8fafc;
-            --bg-chat: #ffffff;
-            --primary-color: #3b82f6;
-            --primary-hover: #2563eb;
-            --text-main: #1e293b;
-            --text-sub: #64748b;
-            --border-color: #e2e8f0;
-            --bg-user-msg: #e0f2fe;
-            --text-user-msg: #0369a1;
-            --bg-ai-msg: #f1f5f9;
+            --bg-color: #f4f7f6;
+            --chat-bg: #ffffff;
+            --primary: #5c6bc0;
+            --primary-hover: #3f51b5;
+            --user-msg: #e8eaf6;
+            --ai-msg: #f0f0f0;
+            --text-dark: #2c3e50;
+            --text-light: #7f8c8d;
+            --border-color: #e0e0e0;
+            --error-bg: #ffebee;
+            --error-text: #c62828;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            -webkit-tap-highlight-color: transparent;
+            font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
 
         body {
+            background-color: var(--bg-color);
             display: flex;
+            justify-content: center;
+            align-items: center;
             height: 100vh;
-            background-color: var(--bg-page);
-            color: var(--text-main);
+            color: var(--text-dark);
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 900px;
+            height: 95vh;
+            background-color: var(--chat-bg);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            display: flex;
+            flex-direction: column;
             overflow: hidden;
         }
 
-        /* 📌 左側側邊欄 */
-        .sidebar {
-            width: 300px;
-            background-color: var(--bg-sidebar);
-            border-right: 1px solid var(--border-color);
-            padding: 24px 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            overflow-y: auto;
-            flex-shrink: 0;
-        }
-
-        .logo-badge {
-            display: inline-block;
-            background-color: #e0f2fe;
-            color: #0284c7;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            width: fit-content;
-            margin-bottom: 8px;
-        }
-
-        .logo-area h1 {
-            font-size: 1.75rem;
-            font-weight: 700;
-            line-height: 1.2;
-            color: #0f172a;
-        }
-
-        .logo-area p {
-            font-size: 0.85rem;
-            color: var(--text-sub);
-            margin-top: 8px;
-            line-height: 1.4;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .form-group label {
-            font-size: 0.8rem;
-            font-weight: 700;
-            color: #475569;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        input[type="password"], select {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            font-size: 0.9rem;
-            outline: none;
+        /* 頂部設定與標題區 */
+        .header {
             background-color: #ffffff;
-            color: var(--text-main);
-        }
-
-        input[type="password"]:focus, select:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
-        }
-
-        .sidebar-hint {
-            font-size: 0.75rem;
-            color: var(--text-sub);
-            line-height: 1.4;
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 10px;
-        }
-
-        button {
-            padding: 10px 16px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            font-weight: 600;
-            transition: background 0.2s, transform 0.1s;
-        }
-
-        .btn-primary { background-color: var(--primary-color); color: white; }
-        .btn-primary:hover { background-color: var(--primary-hover); }
-        .btn-secondary { background-color: #ffffff; border: 1px solid var(--border-color); color: #334155; }
-        .btn-secondary:hover { background-color: #f8fafc; }
-
-        .quick-tags {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-        }
-        
-        .tag-btn {
-            background: #ffffff;
-            border: 1px solid var(--border-color);
-            padding: 8px;
-            font-size: 0.8rem;
-            font-weight: 500;
-            border-radius: 6px;
-            color: #334155;
-        }
-        .tag-btn:hover { background-color: #f1f5f9; border-color: #cbd5e1; }
-
-        /* 📌 右側主聊天區 */
-        .main-content {
-            flex: 1;
+            padding: 20px 25px;
+            border-bottom: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
-            background-color: var(--bg-chat);
-            height: 100vh;
+            gap: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+            z-index: 10;
         }
 
-        .chat-header {
-            padding: 18px 24px;
-            border-bottom: 1px solid var(--border-color);
+        .header-top {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background-color: #ffffff;
         }
 
-        .chat-header h2 { font-size: 1.1rem; font-weight: 700; }
-        .chat-header .model-badge { font-size: 0.8rem; color: var(--text-sub); font-weight: 500; }
-
-        .chat-messages {
-            flex: 1;
-            padding: 24px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            background-color: #f8fafc;
-        }
-
-        .message-row {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-        }
-
-        .message-sender {
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: var(--text-sub);
-            margin-bottom: 4px;
+        .header-title {
+            font-size: 1.4rem;
+            font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 6px;
-        }
-
-        .message-row.user .message-sender { align-self: flex-end; flex-direction: row-reverse; color: #0284c7; }
-        .message-row.ai .message-sender { align-self: flex-start; color: #475569; }
-
-        .message {
-            max-width: 80%;
-            padding: 12px 16px;
-            border-radius: 12px;
-            font-size: 0.95rem;
-            line-height: 1.5;
-            white-space: pre-wrap;
-            word-break: break-all;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
-        }
-
-        .message-row.ai .message {
-            background-color: var(--bg-ai-msg);
-            color: var(--text-main);
-            align-self: flex-start;
-            border-top-left-radius: 2px;
-        }
-
-        .message-row.user .message {
-            background-color: var(--bg-user-msg);
-            color: var(--text-user-msg);
-            align-self: flex-end;
-            border-top-right-radius: 2px;
-        }
-
-        .message.error {
-            background-color: #fef2f2;
-            color: #991b1b;
-            border: 1px solid #fee2e2;
-            font-family: monospace;
-            font-size: 0.85rem;
-            max-width: 90%;
-        }
-
-        /* 📌 底部輸入區塊 */
-        .input-area {
-            padding: 20px 24px;
-            border-top: 1px solid var(--border-color);
-            background-color: #ffffff;
-            display: flex;
-            flex-direction: column;
             gap: 10px;
         }
 
-        .textarea-wrapper {
-            width: 100%;
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 10px 14px;
-            background-color: #ffffff;
+        .settings-toggle {
+            background: none;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
         }
-        .textarea-wrapper:focus-within {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+
+        .settings-panel {
+            display: flex;
+            gap: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .input-group {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .input-group label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-light);
+        }
+
+        .input-group input, .input-group select {
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            border-color: var(--primary);
+        }
+
+        /* 對話顯示區 */
+        .chat-box {
+            flex: 1;
+            padding: 25px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            background-color: #fafafa;
+        }
+
+        .message-wrapper {
+            display: flex;
+            flex-direction: column;
+            max-width: 80%;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message-wrapper.user {
+            align-self: flex-end;
+        }
+
+        .message-wrapper.ai {
+            align-self: flex-start;
+        }
+
+        .sender-name {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .message-wrapper.user .sender-name {
+            text-align: right;
+        }
+
+        .message-content {
+            padding: 14px 18px;
+            border-radius: 18px;
+            font-size: 1rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .message-wrapper.user .message-content {
+            background-color: var(--primary);
+            color: #ffffff;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message-wrapper.ai .message-content {
+            background-color: var(--ai-msg);
+            color: var(--text-dark);
+            border-bottom-left-radius: 4px;
+        }
+
+        .message-content.error {
+            background-color: var(--error-bg);
+            color: var(--error-text);
+            border: 1px solid #ffcdd2;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+
+        /* 底部輸入區 */
+        .input-area {
+            padding: 20px 25px;
+            background-color: #ffffff;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            background-color: var(--bg-color);
+            border-radius: 15px;
+            padding: 10px 15px;
+            border: 1px solid transparent;
+            transition: border-color 0.2s;
+        }
+
+        .input-wrapper:focus-within {
+            border-color: var(--primary);
+            background-color: #ffffff;
         }
 
         textarea {
             width: 100%;
-            height: 60px;
+            height: 45px;
+            max-height: 150px;
             border: none;
+            background: transparent;
             resize: none;
             outline: none;
-            font-size: 0.95rem;
+            font-size: 1rem;
             line-height: 1.5;
-            color: var(--text-main);
-            background: transparent;
+            color: var(--text-dark);
+            overflow-y: auto;
         }
 
-        .input-footer {
+        .send-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
-            font-size: 0.8rem;
-            color: var(--text-sub);
+            transition: background-color 0.2s, transform 0.1s;
+            flex-shrink: 0;
         }
 
-        .action-btns {
-            display: flex;
-            gap: 8px;
+        .send-btn:hover {
+            background-color: var(--primary-hover);
         }
 
-        .action-btns button { padding: 8px 16px; font-size: 0.85rem; border-radius: 20px; }
-        button:disabled { background-color: #cbd5e1; color: #94a3b8; cursor: not-allowed; }
+        .send-btn:active {
+            transform: scale(0.95);
+        }
 
-        /* 📱 手機板 RWD 響應式優化 */
+        .send-btn:disabled {
+            background-color: #b0bec5;
+            cursor: not-allowed;
+        }
+
+        /* 手機版響應式 */
         @media (max-width: 768px) {
-            body { flex-direction: column; }
-            .sidebar { width: 100%; height: auto; max-height: 40vh; border-right: none; border-bottom: 1px solid var(--border-color); padding: 16px; }
-            .main-content { height: 60vh; }
-            .chat-messages { padding: 16px; }
-            .message { max-width: 90%; }
-            .input-area { padding: 12px 16px; }
+            .chat-container { height: 100vh; border-radius: 0; }
+            .message-wrapper { max-width: 90%; }
+            .settings-panel { flex-direction: column; }
         }
     </style>
 </head>
 <body>
 
-    <div class="sidebar">
-        <div class="logo-area">
-            <div class="logo-badge">Gemini Chat</div>
-            <h1>和 AI 對話的工作台</h1>
-            <p>輸入 Gemini API Key 後即可發送請求。介面會把你的對話保存在本地，方便重新整理後繼續使用。</p>
-        </div>
-
-        <div class="form-group">
-            <label>GEMINI API KEY</label>
-            <input type="password" id="apiKey" placeholder="請輸入您的 API Key...">
-            <div class="sidebar-hint">只儲存在這個瀏覽器，不會自動上傳到任何地方。</div>
-        </div>
-
-        <div class="form-group">
-            <label>模型</label>
-            <select id="modelSelect" onchange="updateHeaderModel()">
-                <option value="gemini-2.0-flash">gemini-2.0-flash</option>
-                <option value="gemini-1.5-flash">gemini-1.5-flash</option>
-                <option value="gemini-1.5-pro-latest">gemini-1.5-pro-latest</option>
-            </select>
-        </div>
-
-        <div class="btn-group">
-            <button class="btn-primary" onclick="saveSettings()">暫存金鑰</button>
-            <button class="btn-secondary" onclick="clearChat()">清除對話</button>
-        </div>
-
-        <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 5px 0;">
-
-        <div class="form-group">
-            <label>快速提問</label>
-            <div class="quick-tags">
-                <button class="tag-btn" onclick="insertTag('改寫文字')">改寫文字</button>
-                <button class="tag-btn" onclick="insertTag('整理重點')">整理重點</button>
-                <button class="tag-btn" onclick="insertTag('前端建議')">前端建議</button>
-                <button class="tag-btn" onclick="insertTag('摘要草稿')">摘要草稿</button>
+    <div class="chat-container">
+        <div class="header">
+            <div class="header-top">
+                <div class="header-title">✨ Gemini AI</div>
+                <button class="settings-toggle" onclick="toggleSettings()">⚙️ 設定金鑰</button>
+            </div>
+            
+            <div class="settings-panel" id="settingsPanel" style="display: none;">
+                <div class="input-group">
+                    <label>API Key (儲存於本地端)</label>
+                    <input type="password" id="apiKey" placeholder="貼上您的 Gemini API Key">
+                </div>
+                <div class="input-group">
+                    <label>選擇模型</label>
+                    <select id="modelSelect">
+                        <option value="gemini-2.5-flash">gemini-2.5-flash</option>
+                        <option value="gemini-2.0-flash">gemini-2.0-flash</option>
+                        <option value="gemini-1.5-pro">gemini-1.5-pro</option>
+                    </select>
+                </div>
             </div>
         </div>
 
-        <div class="form-group" style="margin-top: auto;">
-            <label>說明</label>
-            <div class="sidebar-hint">
-                按 Enter 發送。Shift+Enter 換行。<br>
-                若沒有 API Key，曾登入過顯示網頁，方便您進行版面效果與美工。
-            </div>
-        </div>
-    </div>
-
-    <div class="main-content">
-        <div class="chat-header">
-            <h2>聊天視窗</h2>
-            <div class="model-badge" id="headerModel">由 Gemini API 驅動</div>
-        </div>
-
-        <div class="chat-messages" id="chatMessages">
-            <div class="message-row ai">
-                <div class="message-sender">🤖 Gemini</div>
-                <div class="message">我是 Gemini Chat，現在可以為您解答問題。您可以輸入任何問題與我對話。</div>
+        <div class="chat-box" id="chatBox">
+            <div class="message-wrapper ai">
+                <div class="sender-name">Gemini</div>
+                <div class="message-content">你好！我已經準備好了。請先點擊右上角的「設定金鑰」輸入您的 API Key，然後就可以開始對話囉。</div>
             </div>
         </div>
 
         <div class="input-area">
-            <div class="textarea-wrapper">
-                <textarea id="userInput" placeholder="輸入您的問題，按 Enter 發送 (Shift+Enter 換行)"></textarea>
+            <div class="input-wrapper">
+                <textarea id="userInput" placeholder="輸入訊息... (Shift+Enter 換行)" oninput="autoResize(this)"></textarea>
             </div>
-            <div class="input-footer">
-                <span id="charCount">0 字元</span>
-                <div class="action-btns">
-                    <button class="btn-secondary" style="padding: 6px 14px;" onclick="clearInputFields()">點入字群清理</button>
-                    <button class="btn-primary" id="sendBtn" style="padding: 6px 20px;" onclick="sendMessage()">發送訊息</button>
-                </div>
-            </div>
+            <button class="send-btn" id="sendBtn" onclick="sendMessage()" title="發送">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+            </button>
         </div>
     </div>
 
     <script>
-        // 頁面載入時初始化設定
+        // 初始化與讀取設定
         document.addEventListener('DOMContentLoaded', () => {
-            if(localStorage.getItem('gemini_api_key')) {
-                document.getElementById('apiKey').value = localStorage.getItem('gemini_api_key');
-            }
-            if(localStorage.getItem('gemini_model')) {
-                document.getElementById('modelSelect').value = localStorage.getItem('gemini_model');
-            }
-            updateHeaderModel();
-            
-            // 字數計算監聽
-            const textarea = document.getElementById('userInput');
-            textarea.addEventListener('input', () => {
-                document.getElementById('charCount').innerText = `${textarea.value.length} 字元`;
-            });
+            const savedKey = localStorage.getItem('gemini_api_key_v2');
+            const savedModel = localStorage.getItem('gemini_model_v2');
+            if (savedKey) document.getElementById('apiKey').value = savedKey;
+            if (savedModel) document.getElementById('modelSelect').value = savedModel;
 
-            // 監聽 Enter 發送
+            const textarea = document.getElementById('userInput');
             textarea.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
@@ -395,90 +321,77 @@
             });
         });
 
-        function updateHeaderModel() {
-            const model = document.getElementById('modelSelect').value;
-            document.getElementById('headerModel').innerText = model;
-        }
-
-        function saveSettings() {
-            const key = document.getElementById('apiKey').value.trim();
-            const model = document.getElementById('modelSelect').value;
-            localStorage.setItem('gemini_api_key', key);
-            localStorage.setItem('gemini_model', model);
-            alert('設定金鑰成功！');
-        }
-
-        function insertTag(text) {
-            const textarea = document.getElementById('userInput');
-            textarea.value = text;
-            document.getElementById('charCount').innerText = `${text.length} 字元`;
-            textarea.focus();
-        }
-
-        function clearInputFields() {
-            document.getElementById('userInput').value = '';
-            document.getElementById('charCount').innerText = '0 字元';
-        }
-
-        function clearChat() {
-            if(confirm('確定要清空聊天視窗嗎？')) {
-                document.getElementById('chatMessages').innerHTML = `
-                    <div class="message-row ai">
-                        <div class="message-sender">🤖 Gemini</div>
-                        <div class="message">對話已清空。您可以開始新的對話。</div>
-                    </div>`;
+        // 展開/收合設定面板，並自動儲存
+        function toggleSettings() {
+            const panel = document.getElementById('settingsPanel');
+            if (panel.style.display === 'none') {
+                panel.style.display = 'flex';
+            } else {
+                panel.style.display = 'none';
+                // 隱藏時自動儲存
+                localStorage.setItem('gemini_api_key_v2', document.getElementById('apiKey').value.trim());
+                localStorage.setItem('gemini_model_v2', document.getElementById('modelSelect').value);
             }
         }
 
-        function appendMessage(text, role, isError = false) {
-            const container = document.getElementById('chatMessages');
-            const rowDiv = document.createElement('div');
-            rowDiv.classList.add('message-row', role);
-            
-            const senderDiv = document.createElement('div');
-            senderDiv.classList.add('message-sender');
-            senderDiv.innerText = role === 'user' ? '👤 使用者' : '🤖 Gemini';
-            
-            const msgDiv = document.createElement('div');
-            msgDiv.classList.add('message');
-            if (isError) msgDiv.classList.add('error');
-            msgDiv.innerText = text;
-            
-            rowDiv.appendChild(senderDiv);
-            rowDiv.appendChild(msgDiv);
-            container.appendChild(rowDiv);
-            container.scrollTop = container.scrollHeight; // 自動捲動到底部
+        // 輸入框自動調整高度
+        function autoResize(textarea) {
+            textarea.style.height = '45px';
+            textarea.style.height = Math.min(textarea.scrollHeight, 150) + 'px';
         }
 
-        // 核心發送機制與 API 介接
+        // 在畫面上新增訊息
+        function appendMessage(text, role, isError = false) {
+            const chatBox = document.getElementById('chatBox');
+            const wrapper = document.createElement('div');
+            wrapper.className = `message-wrapper ${role}`;
+
+            const sender = document.createElement('div');
+            sender.className = 'sender-name';
+            sender.innerText = role === 'user' ? 'You' : 'Gemini';
+
+            const content = document.createElement('div');
+            content.className = `message-content ${isError ? 'error' : ''}`;
+            content.innerText = text;
+
+            wrapper.appendChild(sender);
+            wrapper.appendChild(content);
+            chatBox.appendChild(wrapper);
+            
+            // 捲動到底部
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // 核心發送功能
         async function sendMessage() {
             const apiKey = document.getElementById('apiKey').value.trim();
             const model = document.getElementById('modelSelect').value;
             const inputField = document.getElementById('userInput');
-            const prompt = inputField.value.trim();
             const sendBtn = document.getElementById('sendBtn');
+            const prompt = inputField.value.trim();
 
             if (!prompt) return;
 
-            // 1. 顯示使用者發送的文字
+            // 顯示使用者訊息並重置輸入框
             appendMessage(prompt, 'user');
-            clearInputFields();
+            inputField.value = '';
+            inputField.style.height = '45px';
 
             if (!apiKey) {
-                // 如果沒有填 key，則切換至示範體驗模式，將回傳格式化錯誤
                 setTimeout(() => {
-                    appendMessage("目前無法連線到 Gemini，已切回示範模式。\\n\\nGemini API 回應失敗 : 403\\n{\\n  \\"error\\": {\\n    \\"message\\": \\"API key not valid. Please pass a valid API key.\\"\\n  \n}", 'ai', false);
-                }, 800);
+                    appendMessage("⚠️ 請先點擊右上角「設定金鑰」填入您的 API Key。", 'ai', true);
+                }, 500);
                 return;
             }
 
-            // 2. 禁用發送按鈕防止重複連點
+            // 鎖定狀態
             sendBtn.disabled = true;
-            sendBtn.innerText = '處理中...';
+            inputField.disabled = true;
+            inputField.placeholder = "等待回應中...";
 
             try {
-                // 3. 發送請求至 Google Gemini API
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+                const response = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -488,28 +401,24 @@
 
                 const data = await response.json();
 
-                // 4. 解析回應
                 if (response.ok) {
                     if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
-                        const reply = data.candidates[0].content.parts[0].text;
-                        appendMessage(reply, 'ai');
+                        appendMessage(data.candidates[0].content.parts[0].text, 'ai');
                     } else {
-                        appendMessage("收到未預期的回應結構。", 'ai');
+                        appendMessage("收到未預期的回應結構。\n" + JSON.stringify(data), 'ai', true);
                     }
                 } else {
-                    // 還原截圖中的 JSON 錯誤呈現方式
-                    let formattedError = `Gemini API 回應失敗 : ${response.status} {\n`;
-                    formattedError += JSON.stringify(data, null, 2);
-                    formattedError += `\n}`;
+                    let formattedError = `API 錯誤 (${response.status}):\n${JSON.stringify(data, null, 2)}`;
                     appendMessage(formattedError, 'ai', true);
                 }
-
             } catch (error) {
-                appendMessage(`網路連線錯誤：${error.message}`, 'ai', true);
+                appendMessage(`網路連線失敗，請檢查網路狀態或跨網域(CORS)設定。\n錯誤詳情：${error.message}`, 'ai', true);
             } finally {
-                // 5. 恢復按鈕狀態
+                // 恢復狀態
                 sendBtn.disabled = false;
-                sendBtn.innerText = '發送訊息';
+                inputField.disabled = false;
+                inputField.placeholder = "輸入訊息... (Shift+Enter 換行)";
+                inputField.focus();
             }
         }
     </script>
